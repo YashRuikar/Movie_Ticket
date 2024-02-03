@@ -157,13 +157,11 @@ let addSeats = (arr) => {
       // Create Seats
 
       for (let seats = 0; seats < seat; seats++) {
-
         if (seats === 0) {
-            let span = document.createElement('span')
-            span.innerText = series[index]
-            row.appendChild(span)
+          let span = document.createElement("span");
+          span.innerText = series[index];
+          row.appendChild(span);
         }
-
 
         let li = document.createElement("li");
         let filter = booked_seats.filter((el) => {
@@ -180,7 +178,7 @@ let addSeats = (arr) => {
         li.id = series[index] + seats;
         li.setAttribute("book", seats);
         li.setAttribute("sr", series[index]);
-        li.innerText = price[index]
+        li.innerText = price[index];
 
         // To book new seats
         li.onclick = () => {
@@ -190,7 +188,9 @@ let addSeats = (arr) => {
             li.classList.toggle("selected");
           }
 
-          let len = Array.from(document.getElementsByClassName("selected")).length;
+          let len = Array.from(
+            document.getElementsByClassName("selected")
+          ).length;
           if (len > 0) {
             document.getElementById("book_ticket").style.display = "unset";
           } else {
@@ -199,11 +199,11 @@ let addSeats = (arr) => {
         };
 
         row.appendChild(li);
-      
+
         if (seats === seat - 1) {
-            let span = document.createElement('span')
-            span.innerText = series[index]
-            row.appendChild(span)
+          let span = document.createElement("span");
+          span.innerText = series[index];
+          row.appendChild(span);
         }
       }
 
@@ -212,8 +212,121 @@ let addSeats = (arr) => {
   });
 };
 
-let data = pvr.filter(
-  (obj) => obj.date === main_date && obj.movie === url_segment[1]
-);
-// console.log(data);
+let data = pvr.filter((obj) => obj.date === main_date && obj.movie === url_segment[1]);
+
+
+document.getElementById('title').innerText = data[0].movie
+document.getElementById('poster').src = data[0].img
+document.getElementById('video').src = data[0].video
+
 addSeats(data);
+
+
+
+let offDate = () => {
+  Array.from(document.getElementsByClassName('date_point')).forEach(el => {
+    el.classList.remove('h6_active')
+  })
+}
+
+Array.from(document.getElementsByClassName('date_point')).forEach(el => {
+  el.addEventListener('click', () => {
+    if (el.innerText > date.getDate - 1) {
+      offDate()
+      el.classList.add('h6_active')
+      main_date = +el.innerText
+      document.getElementById('chair').innerHTML = ''
+      let data = pvr.filter((obj) => obj.date === main_date && obj.movie === url_segment[1]);
+      addSeats(data)
+    }
+  })
+})
+
+// Ticket booking
+
+document.getElementById("book_ticket").addEventListener("click", () => {
+  Array.from(document.getElementsByClassName("selected")).forEach((el) => {
+    let seat_no = el.getAttribute("book");
+    let seat_sr = el.getAttribute("sr").toLocaleLowerCase();
+    let seat_price = el.innerText
+
+    let obj = {
+      movie: url_segment[1],
+      data: main_date,
+    };
+    let getData = pvr.map((obj) => {
+      if (obj.movie === url_segment[1] && obj.data === main_date) {
+        obj[seat_sr].push(+seat_no);
+      }
+      return obj;
+    });
+
+    // console.log(getData);
+
+    document.getElementById("chair").innerHTML = "";
+    let data = getData.filter(
+      (obj) => obj.date === main_date && obj.movie === url_segment[1]
+    );
+    addSeats(data);
+
+    document.getElementById("screen").style.display = "none";
+    document.getElementById("chair").style.display = "none";
+    document.getElementById("det").style.display = "none";
+    document.getElementById("book_ticket").style.display = "none";
+    document.getElementById("back_ticket").style.display = "unset";
+    document.getElementById("ticket").style.display = "block";
+
+    let tic = document.createElement("div");
+    tic.className = "tic";
+    tic.innerHTML = `<div class="barcode">
+      <div class="card">
+          <h6>ROW ${seat_sr.toLocaleUpperCase()}</h6>
+          <h6>${main_date} January 2023</h6>
+      </div>
+      <div class="card">
+          <h6>Seat ${seat_no}</h6>
+          <h6>23:00</h6>
+      </div>
+
+      <svg id="${seat_sr}${seat_no}barcode"></svg>
+      <h5>VEGUS CINEMA</h5>
+    </div>
+    <div class="tic_details">
+      <div class="type">4DX</div>
+      <h5 class="pvr"><span>Vegus</span> Cinema</h5>
+      <h1>Jawan</h1>
+      <div class="seat_det">
+          <div class="seat_cr">
+              <h6>ROW</h6>
+              <h6>${seat_sr.toLocaleUpperCase()}</h6>
+          </div>
+          <div class="seat_cr">
+              <h6>SEAT</h6>
+              <h6>${seat_no}</h6>
+          </div>
+          <div class="seat_cr">
+              <h6>DATE</h6>
+              <h6>${main_date} <sub>sep</sub></h6>
+          </div>
+          <div class="seat_cr">
+              <h6>TIME</h6>
+              <h6>11:30 <sub>pm</sub></h6>
+          </div>
+      </div>
+    `;
+
+    document.getElementById("ticket").appendChild(tic);
+
+    JsBarcode(`#${seat_sr}${seat_no}barcode`, 
+    `${seat_sr.toLocaleUpperCase()}${seat_no}${seat_price}${main_date}012024`);
+  });
+});
+
+document.getElementById("back_ticket").addEventListener("click", () => {
+  document.getElementById("screen").style.display = "inline-block";
+  document.getElementById("chair").style.display = "block";
+  document.getElementById("det").style.display = "flex";
+  document.getElementById("book_ticket").style.display = "unset";
+  document.getElementById("back_ticket").style.display = "none";
+  document.getElementById("ticket").style.display = "none";
+});
