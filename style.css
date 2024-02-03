@@ -37,6 +37,8 @@ body {
 
 .book .left {
     width: 20%;
+    height: 90%;
+    margin-top: 35px;
     background: #2e3037;
 }
 
@@ -78,7 +80,7 @@ body {
 }
 
 .book .right {
-    padding: 10px 40px;
+    padding: 30px 40px;
     background: unset;
 }
 
